@@ -6,23 +6,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.7.2/font/bootstrap-icons.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.0.0/d3.min.js"></script>
 
-    <!-- Подключаем наши скрипты -->
-    <script src="/static/js/cf.js"></script>
-    <script src="/static/js/g.js"></script>
+    <!-- Optimized and modularized scripts (load in correct order) -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/graph.js"></script>
     <script src="/static/js/export.js"></script>
-    <script src="/static/js/report-export.js"></script>
-    <script src="/static/js/history.js"></script>
+    <script src="/static/js/ui.js"></script>
     <script src="/static/js/app.js"></script>
 
     <style>
-        /* Стили для графа зависимостей */
+        /* Styles for dependency graph */
         #dependency-graph svg {
             border: 1px solid #ddd;
             border-radius: 4px;
             background-color: #f9f9f9;
         }
 
-        /* Стили для всплывающих уведомлений */
+        /* Styles for popup notifications */
         .alert-overlay {
             position: fixed;
             top: 20px;
@@ -31,7 +30,7 @@
             max-width: 350px;
         }
 
-        /* Анимация загрузки */
+        /* Loading animation */
         @keyframes pulse {
             0% { opacity: 0.6; }
             50% { opacity: 1; }
@@ -125,7 +124,7 @@
             </div>
         </div>
 
-        <!-- Секция с информацией о метриках -->
+        <!-- Metrics information section -->
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Справка по метрикам</h5>
@@ -160,7 +159,7 @@
                                 <ul>
                                     <li><strong>Узлы:</strong> Представляют модули (файлы)</li>
                                     <li><strong>Связи:</strong> Показывают импорты между модулями</li>
-                                    <li><strong>Цвет:</strong> Модули проекта выделены зеленым, внешние зависимости - серым</li>
+                                    <li><strong>Цвет:</strong> Модули проекта выделены синим, внешние зависимости - оранжевым</li>
                                 </ul>
                                 <p>Граф помогает выявить проблемы в архитектуре, такие как циклические зависимости и сильно связанные модули.</p>
                             </div>
@@ -170,7 +169,7 @@
             </div>
         </div>
 
-        <!-- О проекте -->
+        <!-- About project -->
         <div class="card mt-4 mb-5">
             <div class="card-body">
                 <h5 class="card-title">О проекте</h5>
