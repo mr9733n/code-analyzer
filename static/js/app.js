@@ -1,5 +1,8 @@
 // app.js - Главный JavaScript для обработки формы и инициализации визуализаций
 
+// Глобальная переменная для хранения текущего project_id
+let currentProjectId = null;
+
 // Дожидаемся полной загрузки DOM перед инициализацией
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Document loaded. Initializing...');
@@ -38,6 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('complex-functions').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
             document.getElementById('dependency-graph').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
+            // Удаляем существующие кнопки экспорта, если они есть
+            const existingExportButtons = document.getElementById('export-buttons');
+            if (existingExportButtons) {
+                existingExportButtons.remove();
+            }
+
             // Отправляем запрос на сервер
             console.log(`Отправка запроса на анализ: ${projectPath}`);
             const response = await fetch('/analyze', {
@@ -52,11 +61,17 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Получен ответ от сервера:', data);
 
             if (response.ok) {
+                // Сохраняем идентификатор проекта
+                currentProjectId = data.project_id;
+
                 // Обновляем сводную информацию
                 document.getElementById('total-modules').textContent = data.summary.total_modules;
                 document.getElementById('total-loc').textContent = data.summary.total_loc;
                 document.getElementById('total-functions').textContent = data.summary.total_functions;
                 document.getElementById('total-classes').textContent = data.summary.total_classes;
+
+                // Добавляем кнопки экспорта отчета
+                addReportExportButtons(currentProjectId);
 
                 // Загружаем сложные функции
                 console.log('Вызов loadComplexFunctions с project_id:', data.project_id);

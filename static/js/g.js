@@ -1,4 +1,54 @@
-// Исправленная функция для загрузки и визуализации графа зависимостей
+// Функция для экспорта графа как SVG
+function exportGraphAsSVG() {
+    // Получаем SVG элемент
+    const svgElement = document.querySelector('#dependency-graph svg');
+    if (!svgElement) {
+        console.error('SVG элемент не найден');
+        return;
+    }
+
+    // Создаем клон SVG элемента, чтобы не изменять оригинал
+    const svgClone = svgElement.cloneNode(true);
+
+    // Устанавливаем атрибуты для экспорта
+    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    svgClone.setAttribute('width', svgElement.getAttribute('width'));
+    svgClone.setAttribute('height', svgElement.getAttribute('height'));
+
+    // Добавляем стили в SVG
+    const style = document.createElement('style');
+    style.textContent = `
+        line { stroke: #999; stroke-opacity: 0.6; stroke-width: 2px; }
+        circle { stroke: #fff; stroke-width: 1.5px; }
+        text { font-size: 10px; font-family: Arial, sans-serif; }
+    `;
+    svgClone.insertBefore(style, svgClone.firstChild);
+
+    // Создаем Blob из SVG
+    const svgData = new XMLSerializer().serializeToString(svgClone);
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+
+    // Создаем URL для скачивания
+    const url = URL.createObjectURL(blob);
+
+    // Создаем ссылку для скачивания
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dependency_graph.svg';
+
+    // Добавляем ссылку в DOM и эмулируем клик
+    document.body.appendChild(link);
+    link.click();
+
+    // Удаляем ссылку из DOM
+    document.body.removeChild(link);
+
+    // Освобождаем URL
+    URL.revokeObjectURL(url);
+}
+
+
+// Функция для загрузки и визуализации графа зависимостей
 async function loadDependencyGraph(projectId) {
     try {
         const response = await fetch(`/dependencies/${projectId}`);
@@ -137,6 +187,10 @@ async function loadDependencyGraph(projectId) {
                 .on('drag', dragged)
                 .on('end', dragended);
         }
+
+        // Добавляем кнопки экспорта (вызов глобальной функции из export.js)
+        addExportButtons(container);
+
     } catch (error) {
         console.error('Error loading dependency graph:', error);
         const container = document.getElementById('dependency-graph');

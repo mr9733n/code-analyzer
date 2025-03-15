@@ -1,4 +1,6 @@
 # app.py
+import datetime
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 import json
@@ -130,6 +132,143 @@ def get_complex_functions(project_id):
 
     return jsonify(complex_functions)
 
+
+@app.route('/save_report/<project_id>', methods=['GET'])
+def save_report(project_id):
+    """Сохраняет отчет анализа в файл на сервере"""
+    if project_id not in analysis_results:
+        return jsonify({'error': 'Project not found'}), 404
+
+    try:
+        # Создаем директорию для отчетов, если она не существует
+        reports_dir = os.path.join(os.getcwd(), 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+
+        # Получаем отчет
+        report = analysis_results[project_id]
+
+        # Формируем имя файла с датой и временем
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'report_{timestamp}.json'
+        filepath = os.path.join(reports_dir, filename)
+
+        # Сохраняем отчет в файл
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(report, f, indent=2)
+
+        return jsonify({
+            'success': True,
+            'message': f'Отчет сохранен как {filename}',
+            'filepath': filepath
+        })
+    except Exception as e:
+        return jsonify({'error': f'Ошибка при сохранении отчета: {str(e)}'}), 500
+
+
+@app.route('/save_graph/<project_id>', methods=['POST'])
+def save_graph(project_id):
+    """Сохраняет SVG-данные графа на сервере"""
+    if project_id not in analysis_results:
+        return jsonify({'error': 'Project not found'}), 404
+
+    try:
+        # Получаем SVG-данные из запроса
+        svg_data = request.json.get('svg_data')
+
+        if not svg_data:
+            return jsonify({'error': 'SVG data not provided'}), 400
+
+        # Создаем директорию для графов, если она не существует
+        graphs_dir = os.path.join(os.getcwd(), 'graphs')
+        os.makedirs(graphs_dir, exist_ok=True)
+
+        # Формируем имя файла с датой и временем
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'dependency_graph_{timestamp}.svg'
+        filepath = os.path.join(graphs_dir, filename)
+
+        # Сохраняем граф в файл
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(svg_data)
+
+        return jsonify({
+            'success': True,
+            'message': f'Граф сохранен как {filename}',
+            'filepath': filepath
+        })
+    except Exception as e:
+        return jsonify({'error': f'Ошибка при сохранении графа: {str(e)}'}), 500
+
+
+@app.route('/list_reports', methods=['GET'])
+def list_reports():
+    """Возвращает список сохраненных отчетов"""
+    try:
+        reports_dir = os.path.join(os.getcwd(), 'reports')
+        if not os.path.exists(reports_dir):
+            return jsonify({'reports': []})
+
+        reports = []
+        for filename in os.listdir(reports_dir):
+            if filename.endswith('.json'):
+                file_path = os.path.join(reports_dir, filename)
+                creation_time = os.path.getctime(file_path)
+                creation_date = datetime.datetime.fromtimestamp(creation_time)
+
+                reports.append({
+                    'filename': filename,
+                    'created': creation_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'path': file_path
+                })
+
+        # Сортируем по времени создания (новые вначале)
+        reports.sort(key=lambda x: x['created'], reverse=True)
+
+        return jsonify({'reports': reports})
+    except Exception as e:
+        return jsonify({'error': f'Ошибка при получении списка отчетов: {str(e)}'}), 500
+
+
+@app.route('/download_report/<filename>', methods=['GET'])
+def download_report(filename):
+    """Скачивание сохраненного отчета"""
+    reports_dir = os.path.join(os.getcwd(), 'reports')
+    return send_from_directory(reports_dir, filename, as_attachment=True)
+
+
+@app.route('/save_mermaid/<project_id>', methods=['POST'])
+def save_mermaid(project_id):
+    """Сохраняет данные Mermaid графа на сервере"""
+    if project_id not in analysis_results:
+        return jsonify({'error': 'Project not found'}), 404
+
+    try:
+        # Получаем данные Mermaid из запроса
+        mermaid_data = request.json.get('mermaid_data')
+
+        if not mermaid_data:
+            return jsonify({'error': 'Mermaid data not provided'}), 400
+
+        # Создаем директорию для графов Mermaid, если она не существует
+        mermaid_dir = os.path.join(os.getcwd(), 'mermaid')
+        os.makedirs(mermaid_dir, exist_ok=True)
+
+        # Формируем имя файла с датой и временем
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'dependency_graph_{timestamp}.mermaid'
+        filepath = os.path.join(mermaid_dir, filename)
+
+        # Сохраняем граф в файл
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(mermaid_data)
+
+        return jsonify({
+            'success': True,
+            'message': f'Mermaid сохранен как {filename}',
+            'filepath': filepath
+        })
+    except Exception as e:
+        return jsonify({'error': f'Ошибка при сохранении Mermaid: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Запускаем Flask-приложение

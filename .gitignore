@@ -1,2 +1,5 @@
 .idea/*
 analyzer/__pycache__/*
+graphs/*
+mermaid/*
+reports/*
