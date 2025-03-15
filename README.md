@@ -1,11 +1,9 @@
-# Руководство по быстрому старту
-
 ## Установка
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/mr9733n/PyCodeAnalyzer
-cd PyCodeAnalyzer
+git clone https://github.com/mr9733n/code-analyzer
+cd code-analyzer
 ```
 
 2. Создайте и активируйте виртуальное окружение:
