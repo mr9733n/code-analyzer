@@ -1,5 +1,3 @@
-// export.js - Export functionality for reports and diagrams
-
 /**
  * Export module for creating and saving reports
  */
@@ -9,50 +7,33 @@ const Export = {
      * @param {string} projectId - Project identifier
      */
     addReportExportButtons(projectId) {
-        // Skip if buttons already exist
         if (document.getElementById('export-buttons')) {
             return;
         }
-
-        // Create container for buttons
         const exportContainer = document.createElement('div');
         exportContainer.id = 'export-buttons';
         exportContainer.className = 'mt-4 mb-4';
-
-        // Header for export section
         const exportHeader = document.createElement('h5');
         exportHeader.textContent = 'Экспорт результатов анализа';
         exportContainer.appendChild(exportHeader);
-
-        // Button group
         const buttonGroup = document.createElement('div');
         buttonGroup.className = 'btn-group mt-2';
-
-        // JSON export button
         const jsonButton = document.createElement('button');
         jsonButton.className = 'btn btn-outline-secondary';
         jsonButton.innerHTML = '<i class="bi bi-file-earmark-code"></i> Экспорт в JSON';
         jsonButton.onclick = () => this.exportReportAsJSON(projectId);
         buttonGroup.appendChild(jsonButton);
-
-        // HTML export button
         const htmlButton = document.createElement('button');
         htmlButton.className = 'btn btn-outline-secondary';
         htmlButton.innerHTML = '<i class="bi bi-file-earmark-text"></i> Экспорт в HTML';
         htmlButton.onclick = () => this.exportReportAsHTML(projectId);
         buttonGroup.appendChild(htmlButton);
-
-        // Mermaid diagram export button
         const mermaidButton = document.createElement('button');
         mermaidButton.className = 'btn btn-outline-secondary';
         mermaidButton.innerHTML = '<i class="bi bi-diagram-3"></i> Экспорт диаграммы классов';
         mermaidButton.onclick = () => this.exportGraphAsMermaid(projectId);
         buttonGroup.appendChild(mermaidButton);
-
-        // Add button group to container
         exportContainer.appendChild(buttonGroup);
-
-        // Add container to results section
         const resultsSection = document.getElementById('results');
         resultsSection.insertBefore(exportContainer, resultsSection.firstChild.nextSibling);
     },
@@ -64,7 +45,6 @@ const Export = {
      */
     async exportReportAsJSON(projectId) {
         try {
-            // Get full report from server
             const response = await fetch(`/report/${projectId}`);
             const report = await response.json();
 
@@ -72,17 +52,12 @@ const Export = {
                 throw new Error(`Server returned error: ${report.error || response.status}`);
             }
 
-            // Create JSON blob
             const reportBlob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-
-            // Generate filename with timestamp
             const timestamp = Utils.getTimestampString();
             const filename = `code_analysis_report_${timestamp}.json`;
 
-            // Trigger download
             Utils.triggerDownload(reportBlob, filename);
 
-            // Save report on server
             try {
                 const saveResponse = await fetch(`/save_report/${projectId}`);
                 const saveResult = await saveResponse.json();
@@ -109,7 +84,6 @@ const Export = {
      */
     async exportReportAsHTML(projectId) {
         try {
-            // Get report data from server
             const reportResponse = await fetch(`/report/${projectId}`);
             const report = await reportResponse.json();
 
@@ -117,28 +91,17 @@ const Export = {
                 throw new Error(`Server returned error: ${report.error || reportResponse.status}`);
             }
 
-            // Get complex functions data
             const complexFuncsResponse = await fetch(`/complex_functions/${projectId}`);
             const complexFunctions = await complexFuncsResponse.json();
-
-            // Get dependencies data
             const dependenciesResponse = await fetch(`/dependencies/${projectId}`);
             const dependencies = await dependenciesResponse.json();
-
-            // Generate filename with timestamp
             const timestamp = Utils.getTimestampString();
             const filename = `code_analysis_report_${timestamp}.html`;
-
-            // Create HTML template
             const htmlTemplate = this._generateHTMLReport(report, complexFunctions, dependencies);
-
-            // Create HTML blob
             const htmlBlob = new Blob([htmlTemplate], { type: 'text/html' });
 
-            // Trigger download
             Utils.triggerDownload(htmlBlob, filename);
 
-            // Save HTML report on server
             try {
                 const saveResponse = await fetch(`/save_html_report/${projectId}`, {
                     method: 'POST',
@@ -280,7 +243,6 @@ const Export = {
      */
     async exportGraphAsMermaid(projectId) {
         try {
-            // Get dependencies
             const dependenciesResponse = await fetch(`/dependencies/${projectId}`);
             const dependencies = await dependenciesResponse.json();
 
@@ -290,17 +252,14 @@ const Export = {
 
             console.log("Dependencies for Mermaid:", dependencies);
 
-            // Generate Mermaid diagram text
             const mermaidText = this._generateMermaidDiagram(dependencies);
 
-            // Create and download blob
             const blob = new Blob([mermaidText], { type: 'text/plain' });
             const timestamp = Utils.getTimestampString();
             const filename = `dependency_graph_${timestamp}.mermaid`;
 
             Utils.triggerDownload(blob, filename);
 
-            // Save on server
             try {
                 const saveResponse = await fetch(`/save_mermaid/${projectId}`, {
                     method: 'POST',
@@ -336,24 +295,18 @@ const Export = {
     _generateMermaidDiagram(dependencies) {
         let mermaidText = "classDiagram\n";
 
-        // Dictionary for storing classes and their methods
         const classes = {};
 
-        // First create all classes from project modules
         for (const modulePath in dependencies) {
-            // Get class name from file path
             const moduleName = Utils.getFilenameFromPath(modulePath);
 
-            // Normalize name for use in Mermaid
             const className = moduleName.replace(/[^a-zA-Z0-9_]/g, '_');
 
-            // Save in dictionary for further use
             classes[modulePath] = {
                 name: className,
                 methods: []
             };
 
-            // Add methods based on class name
             classes[modulePath].methods.push(`+process()`);
 
             if (moduleName.toLowerCase().includes('manager')) {
@@ -365,14 +318,11 @@ const Export = {
             }
         }
 
-        // Add all classes to Mermaid text
         for (const modulePath in classes) {
             const classInfo = classes[modulePath];
 
-            // Class definition
             mermaidText += `    class ${classInfo.name} {\n`;
 
-            // Class methods
             classInfo.methods.forEach(method => {
                 mermaidText += `        ${method}\n`;
             });
@@ -380,28 +330,22 @@ const Export = {
             mermaidText += `    }\n`;
         }
 
-        // Add relationships between modules
         mermaidText += "\n    %% Relationships between classes\n";
         let relationshipsFound = false;
 
         for (const modulePath in dependencies) {
             const sourceClassName = classes[modulePath].name;
 
-            // Skip if no dependencies
             if (!Array.isArray(dependencies[modulePath]) || dependencies[modulePath].length === 0) {
                 continue;
             }
 
-            // Process each dependency
             for (const dependency of dependencies[modulePath]) {
-                // Find the actual module path for this dependency
                 let targetClassName = null;
 
-                // Strategy 1: Direct match
                 if (dependencies.hasOwnProperty(dependency)) {
                     targetClassName = classes[dependency].name;
                 }
-                // Strategy 2: Match by filename
                 else {
                     for (const path in classes) {
                         const fileName = Utils.getFilenameFromPath(path);
@@ -412,21 +356,17 @@ const Export = {
                     }
                 }
 
-                // If found matching target module, add relationship
                 if (targetClassName) {
                     mermaidText += `    ${sourceClassName} --> ${targetClassName}\n`;
                     relationshipsFound = true;
                 } else {
-                    // If no matching module found, create placeholder
                     const placeholderName = dependency.replace(/[^a-zA-Z0-9_]/g, '_');
 
-                    // Check if placeholder already added
                     if (!classes[dependency]) {
                         mermaidText += `    class ${placeholderName} {\n`;
                         mermaidText += `        +process()\n`;
                         mermaidText += `    }\n`;
 
-                        // Add to classes dict to prevent duplicates
                         classes[dependency] = {
                             name: placeholderName,
                             methods: ['+process()']
@@ -439,7 +379,6 @@ const Export = {
             }
         }
 
-        // Add note if no relationships found
         if (!relationshipsFound) {
             mermaidText += "    %% No relationships found between classes\n";
         }

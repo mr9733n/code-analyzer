@@ -1,6 +1,3 @@
-// app.js - Main application logic and initialization
-
-// Global variable for current project ID
 window.currentProjectId = null;
 
 /**
@@ -13,14 +10,11 @@ const App = {
     initialize() {
         console.log('Initializing application...');
 
-        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded. Initializing components...');
 
-            // Initialize UI components
             UI.initialize();
 
-            // Set up form handling
             this._setupAnalyzeForm();
 
             console.log('Initialization complete. Application ready.');
@@ -66,10 +60,8 @@ const App = {
      * @private
      */
     async _performAnalysis(projectPath) {
-        // Show loading indicators
         this._showLoadingState();
 
-        // Send request to server
         console.log(`Sending analysis request: ${projectPath}`);
         const response = await fetch('/analyze', {
             method: 'POST',
@@ -83,20 +75,15 @@ const App = {
         console.log('Received response from server:', data);
 
         if (response.ok) {
-            // Save project ID
             window.currentProjectId = data.project_id;
 
-            // Update summary information
             this._updateSummary(data.summary);
 
-            // Add export buttons
             Export.addReportExportButtons(window.currentProjectId);
 
-            // Load complex functions
             console.log('Loading complex functions with project_id:', data.project_id);
             await this._loadComplexFunctions(data.project_id);
 
-            // Load dependency graph
             console.log('Loading dependency graph with project_id:', data.project_id);
             await Graph.loadDependencyGraph(data.project_id);
 
@@ -112,21 +99,17 @@ const App = {
      * @private
      */
     _showLoadingState() {
-        // Show results section
         const resultsSection = document.getElementById('results');
         resultsSection.classList.remove('d-none');
 
-        // Set counter values to "loading..."
         document.getElementById('total-modules').textContent = '...';
         document.getElementById('total-loc').textContent = '...';
         document.getElementById('total-functions').textContent = '...';
         document.getElementById('total-classes').textContent = '...';
 
-        // Clear previous results and show spinners
         document.getElementById('complex-functions').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
         document.getElementById('dependency-graph').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
-        // Remove existing export buttons if any
         const existingExportButtons = document.getElementById('export-buttons');
         if (existingExportButtons) {
             existingExportButtons.remove();
@@ -161,17 +144,14 @@ const App = {
             const container = document.getElementById('complex-functions');
             container.innerHTML = '';
 
-            // Check if there's data to display
             if (!functions || functions.length === 0) {
                 container.innerHTML = '<div class="alert alert-info">В проекте не найдено функций с высокой сложностью.</div>';
                 return;
             }
 
-            // Create table
             const table = document.createElement('table');
             table.className = 'table table-striped';
 
-            // Table header
             const thead = document.createElement('thead');
             thead.innerHTML = `
                 <tr>
@@ -183,7 +163,6 @@ const App = {
             `;
             table.appendChild(thead);
 
-            // Table body
             const tbody = document.createElement('tbody');
             functions.forEach(func => {
                 const row = document.createElement('tr');
@@ -199,7 +178,6 @@ const App = {
 
             container.appendChild(table);
 
-            // Add info about cyclomatic complexity
             const infoDiv = document.createElement('div');
             infoDiv.className = 'mt-3 small text-muted';
             infoDiv.innerHTML = `
@@ -220,5 +198,4 @@ const App = {
     }
 };
 
-// Initialize the application
 App.initialize();

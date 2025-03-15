@@ -4,8 +4,8 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/code-analyzer.git
-cd code-analyzer
+git clone https://github.com/mr9733n/PyCodeAnalyzer
+cd PyCodeAnalyzer
 ```
 
 2. Создайте и активируйте виртуальное окружение:
@@ -18,30 +18,6 @@ source venv/bin/activate  # На Windows: venv\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
-
-## Структура проекта
-
-Создайте следующую структуру директорий:
-
-```
-code-analyzer/
-├── analyzer/
-│   ├── __init__.py
-│   └── core.py
-├── app.py
-├── templates/
-└── requirements.txt
-```
-
-4. Создайте файл `analyzer/__init__.py`:
-```python
-# analyzer/__init__.py
-from .core import CodeAnalyzer
-```
-
-5. Скопируйте код из раздела "Базовый анализатор кода на Python" в файл `analyzer/core.py`
-
-6. Скопируйте код из раздела "Простой веб-интерфейс для анализатора" в файл `app.py`
 
 ## Запуск
 
@@ -64,11 +40,3 @@ python -m analyzer.core /путь/к/вашему/проекту
 
 Результат анализа будет выведен в формате JSON.
 
-## Что дальше?
-
-После успешного запуска базового анализатора вы можете:
-
-1. Расширить функционал анализатора, добавив дополнительные метрики
-2. Улучшить визуализацию, добавив более подробные графики и диаграммы
-3. Добавить поддержку других языков программирования
-4. Создать систему рекомендаций на основе выявленных паттернов

@@ -50,21 +50,17 @@ class CodeAnalyzer:
         try:
             tree = ast.parse(content)
 
-            # Базовый анализ
             imports = []
             functions = []
             classes = []
 
             for node in ast.walk(tree):
-                # Анализ импортов
                 if isinstance(node, ast.Import):
                     for name in node.names:
                         imports.append(name.name)
                 elif isinstance(node, ast.ImportFrom):
                     if node.module:
                         imports.append(node.module)
-
-                # Анализ функций
                 elif isinstance(node, ast.FunctionDef):
                     func_info = {
                         'name': node.name,
@@ -74,7 +70,6 @@ class CodeAnalyzer:
                     }
                     functions.append(func_info)
 
-                # Анализ классов
                 elif isinstance(node, ast.ClassDef):
                     class_info = {
                         'name': node.name,
@@ -94,7 +89,6 @@ class CodeAnalyzer:
 
                     classes.append(class_info)
 
-            # Сохраняем зависимости
             self.dependencies[file_path] = set(imports)
 
             return {
@@ -121,16 +115,13 @@ class CodeAnalyzer:
         Returns:
             Значение цикломатической сложности
         """
-        complexity = 1  # Базовая сложность
+        complexity = 1
 
         for child_node in ast.walk(node):
-            # Увеличиваем сложность для каждой ветки
             if isinstance(child_node, (ast.If, ast.While, ast.For)):
                 complexity += 1
-            # Для каждого блока except
             elif isinstance(child_node, ast.ExceptHandler):
                 complexity += 1
-            # Для каждой операции and/or
             elif isinstance(child_node, ast.BoolOp):
                 complexity += len(child_node.values) - 1
 
@@ -159,7 +150,6 @@ class CodeAnalyzer:
         total_functions = sum(len(module.get('functions', [])) for module in self.modules.values())
         total_classes = sum(len(module.get('classes', [])) for module in self.modules.values())
 
-        # Поиск самых сложных функций
         all_functions = []
         for module_path, module_info in self.modules.items():
             for func in module_info.get('functions', []):
@@ -172,7 +162,6 @@ class CodeAnalyzer:
                     method['class'] = cls['name']
                     all_functions.append(method)
 
-        # Сортировка функций по сложности
         all_functions.sort(key=lambda x: x.get('complexity', 0), reverse=True)
         complex_functions = all_functions[:10]  # Топ-10 самых сложных функций
 
@@ -194,7 +183,6 @@ class CodeAnalyzer:
         """
         report = self.generate_project_report()
 
-        # Преобразование set в list для JSON-сериализации
         for key, value in report.items():
             if isinstance(value, set):
                 report[key] = list(value)

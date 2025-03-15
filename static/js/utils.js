@@ -1,5 +1,3 @@
-// utils.js - Shared utility functions across the application
-
 /**
  * Namespace for utility functions
  */
@@ -12,7 +10,6 @@ const Utils = {
      * @param {HTMLElement} [container=null] - Container to append notification to (if null, adds below export buttons)
      */
     showNotification: function(message, type = 'success', duration = 5000, container = null) {
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `alert alert-${type} alert-dismissible fade show mt-3`;
         notification.innerHTML = `
@@ -20,19 +17,15 @@ const Utils = {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         `;
 
-        // Find container to add notification to
         if (!container) {
-            // Default: add after export buttons
             container = document.getElementById('export-buttons');
             if (container) {
                 container.parentNode.insertBefore(notification, container.nextSibling);
             } else {
-                // Fallback: add to results section
                 container = document.getElementById('results');
                 if (container) {
                     container.appendChild(notification);
                 } else {
-                    // Last resort: add to body
                     document.body.appendChild(notification);
                 }
             }
@@ -40,7 +33,6 @@ const Utils = {
             container.appendChild(notification);
         }
 
-        // Auto-hide notification after duration (if specified)
         if (duration > 0) {
             setTimeout(() => {
                 notification.remove();
@@ -120,5 +112,4 @@ const Utils = {
     }
 };
 
-// Export the Utils namespace
 window.Utils = Utils;

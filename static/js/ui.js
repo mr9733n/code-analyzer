@@ -1,5 +1,3 @@
-// ui.js - UI component management
-
 /**
  * UI module for managing UI components and interactions
  */
@@ -9,31 +7,22 @@ const UI = {
      */
     initialize() {
         console.log('Initializing UI components...');
-
-        // Add history button
         this.addHistoryButton();
-
-        // Other UI initializations can be added here
     },
 
     /**
      * Add history button to analyze form
      */
     addHistoryButton() {
-        // Skip if button already exists
         if (document.getElementById('history-button')) {
             return;
         }
-
-        // Create history button
         const historyButton = document.createElement('button');
         historyButton.id = 'history-button';
         historyButton.className = 'btn btn-outline-secondary';
         historyButton.type = 'button'; // Prevent form submission
         historyButton.innerHTML = '<i class="bi bi-clock-history"></i> История анализов';
         historyButton.onclick = () => this.showReportsHistory();
-
-        // Add button to form
         const analyzeForm = document.getElementById('analyze-form');
         const submitButton = analyzeForm.querySelector('button[type="submit"]');
 
@@ -48,11 +37,9 @@ const UI = {
      * @returns {Promise<void>}
      */
     async showReportsHistory() {
-        // Create or get modal
         let historyModal = document.getElementById('reports-history-modal');
 
         if (!historyModal) {
-            // Create modal
             historyModal = document.createElement('div');
             historyModal.id = 'reports-history-modal';
             historyModal.className = 'modal fade';
@@ -95,15 +82,11 @@ const UI = {
                 </div>
             `;
 
-            // Add modal to DOM
             document.body.appendChild(historyModal);
         }
 
-        // Initialize Bootstrap modal
         const modal = new bootstrap.Modal(historyModal);
         modal.show();
-
-        // Load reports list
         await this.loadReportsList();
     },
 
@@ -113,10 +96,7 @@ const UI = {
      */
     async loadReportsList() {
         try {
-            // Fetch reports data
             const reports = await this._fetchReports();
-
-            // Display reports
             const reportsListContainer = document.getElementById('reports-list-container');
 
             if (reports.length === 0) {
@@ -126,7 +106,6 @@ const UI = {
                     </div>
                 `;
             } else {
-                // Create reports table
                 reportsListContainer.innerHTML = `
                     <table class="table table-striped table-hover">
                         <thead>
@@ -144,7 +123,6 @@ const UI = {
                     </table>
                 `;
 
-                // Add filter handlers
                 this._setupReportFilters();
             }
         } catch (error) {
@@ -189,7 +167,6 @@ const UI = {
      */
     _generateReportsTableRows(reports) {
         return reports.map(report => {
-            // Determine icon based on file type
             let icon;
             switch (report.type) {
                 case 'JSON Report':
@@ -208,10 +185,8 @@ const UI = {
                     icon = '<i class="bi bi-file-earmark"></i>';
             }
 
-            // Define actions based on file type
             let actions = `<a href="/download_report/${report.filename}" class="btn btn-sm btn-outline-primary me-1" download>Скачать</a>`;
 
-            // Add preview button for HTML and SVG files
             if (report.type === 'HTML Report' || report.type === 'SVG Diagram') {
                 actions += `<a href="/download_report/${report.filename}" class="btn btn-sm btn-outline-info" target="_blank">Просмотр</a>`;
             }
@@ -236,23 +211,18 @@ const UI = {
      * @private
      */
     _setupReportFilters() {
-        // Filter by name
         const filterInput = document.getElementById('reports-filter');
         if (filterInput) {
             filterInput.addEventListener('input', () => this._filterReports());
         }
 
-        // Filter by type
         const modal = document.getElementById('reports-history-modal');
         const typeButtons = modal.querySelectorAll('.btn-group[aria-label="Фильтры по типу"] button');
 
         typeButtons.forEach(button => {
             button.addEventListener('click', function() {
-                // Remove active class from all buttons
                 typeButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
                 this.classList.add('active');
-                // Apply filter
                 UI._filterReports();
             });
         });
@@ -266,20 +236,16 @@ const UI = {
         const filterText = document.getElementById('reports-filter').value.toLowerCase();
         const activeTypeButton = document.querySelector('.btn-group[aria-label="Фильтры по типу"] button.active');
         const selectedType = activeTypeButton.getAttribute('data-type');
-
         const allRows = document.querySelectorAll('#reports-table-body tr.report-item');
 
         allRows.forEach(row => {
             const filename = row.querySelector('td:first-child span').textContent.toLowerCase();
             const type = row.getAttribute('data-type');
-
             const matchesFilter = filename.includes(filterText);
             const matchesType = selectedType === 'all' || type === selectedType;
-
             row.style.display = (matchesFilter && matchesType) ? '' : 'none';
         });
     }
 };
 
-// Export the UI namespace
 window.UI = UI;
