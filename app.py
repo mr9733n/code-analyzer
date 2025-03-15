@@ -6,22 +6,14 @@ import os
 import json
 from analyzer.core import CodeAnalyzer
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Временное хранилище для результатов анализа
 analysis_results = {}
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-@app.route('/static/js/<path:filename>')
-def serve_static(filename):
-    """Обработчик для обслуживания статических JS файлов"""
-    return send_from_directory('static/js', filename)
-
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -165,6 +157,42 @@ def save_report(project_id):
         return jsonify({'error': f'Ошибка при сохранении отчета: {str(e)}'}), 500
 
 
+@app.route('/save_html_report/<project_id>', methods=['POST'])
+def save_html_report(project_id):
+    if project_id not in analysis_results:
+        return jsonify({'error': 'Project not found'}), 404
+
+    try:
+        # Get data from request
+        data = request.get_json()
+        html_content = data.get('html_content')
+        file_name = data.get('file_name')
+
+        if not html_content:
+            return jsonify({'error': 'HTML content is missing'}), 400
+
+        # Create reports directory if it doesn't exist
+        reports_dir = os.path.join(os.getcwd(), 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+
+        # Use the provided filename or generate one
+        if not file_name:
+            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            file_name = f'report_{project_id}_{timestamp}.html'
+
+        filepath = os.path.join(reports_dir, file_name)
+
+        # Save the report to file
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        return jsonify({
+            'message': f'HTML отчет сохранен как {file_name}',
+            'filepath': filepath
+        })
+    except Exception as e:
+        return jsonify({'error': f'Ошибка при сохранении отчета: {str(e)}'}), 500
+
 @app.route('/save_graph/<project_id>', methods=['POST'])
 def save_graph(project_id):
     """Сохраняет SVG-данные графа на сервере"""
@@ -202,23 +230,64 @@ def save_graph(project_id):
 
 @app.route('/list_reports', methods=['GET'])
 def list_reports():
-    """Возвращает список сохраненных отчетов"""
+    """Возвращает список всех сохраненных отчетов и диаграмм"""
     try:
-        reports_dir = os.path.join(os.getcwd(), 'reports')
-        if not os.path.exists(reports_dir):
-            return jsonify({'reports': []})
+        # Словарь типов файлов для определения категории
+        file_types = {
+            '.json': 'JSON Report',
+            '.html': 'HTML Report',
+            '.svg': 'SVG Diagram',
+            '.mermaid': 'Mermaid Diagram'
+        }
+
+        # Директории для поиска файлов
+        directories = {
+            'reports': os.path.join(os.getcwd(), 'reports'),
+            'graphs': os.path.join(os.getcwd(), 'graphs'),
+            'mermaid': os.path.join(os.getcwd(), 'mermaid')
+        }
 
         reports = []
-        for filename in os.listdir(reports_dir):
-            if filename.endswith('.json'):
-                file_path = os.path.join(reports_dir, filename)
+
+        # Проходим по всем директориям
+        for dir_name, dir_path in directories.items():
+            if not os.path.exists(dir_path):
+                continue
+
+            # Сканируем все файлы в директории
+            for filename in os.listdir(dir_path):
+                file_path = os.path.join(dir_path, filename)
+                if not os.path.isfile(file_path):
+                    continue
+
+                # Получаем расширение файла
+                _, ext = os.path.splitext(filename)
+
+                # Проверяем, поддерживаем ли мы этот тип файла
+                if ext not in file_types:
+                    continue
+
+                # Получаем время создания и размер файла
                 creation_time = os.path.getctime(file_path)
                 creation_date = datetime.datetime.fromtimestamp(creation_time)
+                file_size = os.path.getsize(file_path)
 
+                # Форматируем размер файла
+                if file_size < 1024:
+                    size_str = f"{file_size} B"
+                elif file_size < 1024 * 1024:
+                    size_str = f"{file_size / 1024:.1f} KB"
+                else:
+                    size_str = f"{file_size / (1024 * 1024):.1f} MB"
+
+                # Добавляем информацию о файле
                 reports.append({
                     'filename': filename,
                     'created': creation_date.strftime('%Y-%m-%d %H:%M:%S'),
-                    'path': file_path
+                    'path': file_path,
+                    'type': file_types[ext],
+                    'category': dir_name,
+                    'size': size_str
                 })
 
         # Сортируем по времени создания (новые вначале)
@@ -227,13 +296,6 @@ def list_reports():
         return jsonify({'reports': reports})
     except Exception as e:
         return jsonify({'error': f'Ошибка при получении списка отчетов: {str(e)}'}), 500
-
-
-@app.route('/download_report/<filename>', methods=['GET'])
-def download_report(filename):
-    """Скачивание сохраненного отчета"""
-    reports_dir = os.path.join(os.getcwd(), 'reports')
-    return send_from_directory(reports_dir, filename, as_attachment=True)
 
 
 @app.route('/save_mermaid/<project_id>', methods=['POST'])
@@ -269,6 +331,54 @@ def save_mermaid(project_id):
         })
     except Exception as e:
         return jsonify({'error': f'Ошибка при сохранении Mermaid: {str(e)}'}), 500
+
+
+@app.route('/download_report/<filename>', methods=['GET'])
+def download_report(filename):
+    """Скачивание сохраненного отчета или диаграммы из любой директории"""
+    # Проверяем все возможные директории
+    possible_dirs = [
+        os.path.join(os.getcwd(), 'reports'),
+        os.path.join(os.getcwd(), 'graphs'),
+        os.path.join(os.getcwd(), 'mermaid')
+    ]
+
+    # Определяем расширение файла
+    _, ext = os.path.splitext(filename)
+
+    # Устанавливаем Content-Type в зависимости от типа файла
+    content_types = {
+        '.json': 'application/json',
+        '.html': 'text/html',
+        '.svg': 'image/svg+xml',
+        '.mermaid': 'text/plain'
+    }
+
+    mime_type = content_types.get(ext.lower(), 'application/octet-stream')
+
+    # Ищем файл в каждой из директорий
+    for directory in possible_dirs:
+        file_path = os.path.join(directory, filename)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            # Если это SVG или HTML и запрос для просмотра (не скачивания)
+            if (ext.lower() in ['.svg', '.html']) and 'download' not in request.args:
+                return send_from_directory(
+                    directory,
+                    filename,
+                    mimetype=mime_type,
+                    as_attachment=False
+                )
+            # Иначе отправляем как вложение для скачивания
+            return send_from_directory(
+                directory,
+                filename,
+                mimetype=mime_type,
+                as_attachment=True
+            )
+
+    # Если файл не найден
+    return jsonify({'error': 'Файл не найден'}), 404
+
 
 if __name__ == '__main__':
     # Запускаем Flask-приложение
