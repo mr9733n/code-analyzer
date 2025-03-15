@@ -1,0 +1,147 @@
+        /* Theme variables and base styles */
+        :root {
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color, #fff);
+            color: var(--text-color, #212529);
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        body.dark-theme .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+        }
+
+        body.dark-theme .modal-content {
+            background-color: var(--modal-bg);
+            border-color: var(--card-border);
+        }
+
+        body.dark-theme .modal-header,
+        body.dark-theme .modal-footer {
+            background-color: var(--modal-header);
+            border-color: var(--card-border);
+        }
+
+        body.dark-theme input.form-control,
+        body.dark-theme textarea.form-control {
+            background-color: var(--input-bg);
+            border-color: var(--card-border);
+            color: var(--input-text);
+        }
+
+		body.dark-theme .table {
+			color: var(--text-color) !important;
+		}
+
+        body.dark-theme .table td,
+		body.dark-theme .table th {
+			color: var(--text-color) !important;
+		}
+
+		body.dark-theme .table-striped > tbody > tr:nth-of-type(odd) > * {
+			color: var(--text-color) !important;
+			background-color: var(--bs-table-striped-bg);
+		}
+
+		body.dark-theme .table-striped > tbody > tr:nth-of-type(even) > * {
+			color: var(--text-color) !important;
+		}
+
+		body.dark-theme .table-hover > tbody > tr:hover > * {
+			color: var(--text-color) !important;
+			background-color: var(--table-hover);
+		}
+
+        body.dark-theme .accordion-item,
+        body.dark-theme .accordion-header,
+        body.dark-theme .accordion-button {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--card-border);
+        }
+
+        body.dark-theme .accordion-button:not(.collapsed) {
+            background-color: var(--modal-header);
+            color: var(--text-color);
+        }
+
+        body.dark-theme .accordion-button::after {
+            filter: invert(1);
+        }
+
+        body.dark-theme a:not(.btn) {
+            color: var(--link-color);
+        }
+
+        body.dark-theme #dependency-graph svg {
+            background-color: var(--graph-bg);
+            border-color: var(--card-border);
+        }
+
+        /* Graph tooltip dark styling */
+        body.dark-theme .graph-tooltip {
+            background: rgba(60, 60, 60, 0.9) !important;
+            border: 1px solid #555;
+        }
+
+        /* Alert styling */
+        body.dark-theme .alert-info {
+            background-color: #234258;
+            color: #a8cbde;
+            border-color: #2c6c91;
+        }
+
+        body.dark-theme .alert-success {
+            background-color: #1f422c;
+            color: #8fbfa0;
+            border-color: #2d6244;
+        }
+
+        body.dark-theme .alert-danger {
+            background-color: #462937;
+            color: #d9a3b8;
+            border-color: #6e3b52;
+        }
+
+        /* Toggle button transition */
+        .theme-toggle .btn {
+            transition: all var(--transition-speed);
+        }
+
+        .theme-toggle .btn i {
+            margin-right: 5px;
+        }
+
+        /* Badge styling */
+        body.dark-theme .badge.bg-secondary {
+            background-color: #555 !important;
+        }
+
+        /* Original styles */
+        #dependency-graph svg {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .loading-pulse {
+            animation: pulse 1.5s infinite;
+        }

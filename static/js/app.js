@@ -13,6 +13,11 @@ const App = {
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded. Initializing components...');
 
+            // Initialize theme system first
+            if (window.Theme) {
+                Theme.initialize();
+            }
+
             UI.initialize();
 
             this._setupAnalyzeForm();
@@ -86,6 +91,11 @@ const App = {
 
             console.log('Loading dependency graph with project_id:', data.project_id);
             await Graph.loadDependencyGraph(data.project_id);
+
+            // Apply theme to the graph after it's loaded
+            if (window.Theme) {
+                Theme.updateGraphTheme();
+            }
 
             console.log('Visualization complete');
         } else {

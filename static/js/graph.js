@@ -220,20 +220,20 @@ const Graph = {
                     return '#f0c297';
                 }
             })
-            .attr('stroke', '#fff')
+            .attr('stroke', window.Theme && window.Theme.current === 'dark' ? '#333' : '#f5f5f5')
             .attr('stroke-width', 1.5);
 
-        nodeGroup.append('rect')
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr('x', 12)
-            .attr('y', -9)
-            .attr('fill', 'white')
-            .attr('opacity', 0.8)
-            .attr('stroke', '#eee')
-            .attr('stroke-width', 0.5)
-            .attr('width', d => Math.min(d.displayName.length * 6.5 + 6, 150))
-            .attr('height', 18);
+		nodeGroup.append('rect')
+			.attr('rx', 3)
+			.attr('ry', 3)
+			.attr('x', 12)
+			.attr('y', -9)
+			.attr('fill', window.Theme && window.Theme.current === 'dark' ? '#333' : 'white')
+			.attr('opacity', 0.8)
+			.attr('stroke', window.Theme && window.Theme.current === 'dark' ? '#555' : '#eee')
+			.attr('stroke-width', 0.5)
+			.attr('width', d => Math.min(d.displayName.length * 6.5 + 6, 150))
+			.attr('height', 18);
 
         nodeGroup.append('text')
             .text(d => {
@@ -244,8 +244,13 @@ const Graph = {
             })
             .attr('font-size', 12)
             .attr('font-family', 'Arial, sans-serif')
+            .attr('fill', window.Theme && window.Theme.current === 'dark' ? '#f5f5f5' : 'inherit')
             .attr('x', 15)
             .attr('y', 3);
+
+		if (window.Theme) {
+			window.Theme.updateGraphTheme();
+		}
 
         simulation.on('tick', () => {
             nodes.forEach(d => {

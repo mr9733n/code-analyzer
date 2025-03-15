@@ -1,7 +1,4 @@
 ast2json
-networkx
 pylint
-flask
-pytest
-black
-mypy
+Flask==2.0.1
+Werkzeug==2.0.1
